@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillSprint</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen">
+
+  <div class="max-w-7xl mx-auto p-6">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
+      <div>
+        <h1 class="text-6xl font-black bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent">
+          SkillSprint
+        </h1>
+        <p class="text-slate-500 mt-2 text-lg">
+          Turn boredom into productivity.
+        </p>
+      </div>
+
+      <div class="flex gap-3">
+        <input
+          id="challengeInput"
+          type="text"
+          placeholder="Create a sprint..."
+          class="px-5 py-3 rounded-2xl border border-slate-200 bg-white shadow-sm outline-none"
+        />
+
+        <button
+          onclick="addChallenge()"
+          class="bg-cyan-500 hover:bg-cyan-400 text-white px-6 py-3 rounded-2xl font-semibold transition"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+
+      <div class="bg-white rounded-3xl p-6 shadow-lg border border-slate-200">
+        <p class="text-slate-500">Level</p>
+        <h2 id="level" class="text-4xl font-black mt-2">12</h2>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 shadow-lg border border-slate-200">
+        <p class="text-slate-500">XP</p>
+        <h2 id="xp" class="text-4xl font-black mt-2">750</h2>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 shadow-lg border border-slate-200">
+        <p class="text-slate-500">Completed</p>
+        <h2 id="completed" class="text-4xl font-black mt-2">0</h2>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 shadow-lg border border-slate-200">
+        <p class="text-slate-500">Focus Timer</p>
+        <h2 id="timer" class="text-4xl font-black mt-2">25:00</h2>
+
+        <div class="flex gap-2 mt-4">
+          <button
+            onclick="startTimer()"
+            class="flex-1 bg-cyan-500 hover:bg-cyan-400 text-white py-2 rounded-xl"
+          >
+            Start
+          </button>
+
+          <button
+            onclick="resetTimer()"
+            class="flex-1 bg-slate-200 hover:bg-slate-300 py-2 rounded-xl"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Challenge Grid -->
+    <div id="challengeGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-8"></div>
+
+    <!-- Motivation -->
+    <div class="mt-10 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-3xl p-8 shadow-2xl text-white">
+      <p class="uppercase tracking-widest text-sm opacity-80">
+        Daily Motivation
+      </p>
+
+      <h2 class="text-4xl font-black mt-3 leading-tight max-w-3xl">
+        Small improvements every day become huge results over time.
+      </h2>
+    </div>
+
+  </div>
+
+  <script>
+    let xp = 750;
+    let level = 12;
+    let completed = 0;
+    let timerSeconds = 1500;
+    let timerInterval;
+
+    const templates = [
+      ['Coding', 'Build a Website', 'Create a responsive webpage.', 'cyan'],
+      ['Basketball', 'Practice Crossovers', 'Train dribbling for 15 minutes.', 'purple'],
+      ['Origami', 'Fold a Dragon', 'Learn a complex dragon fold.', 'pink'],
+      ['Fitness', 'Morning Workout', 'Complete a 20 minute workout.', 'cyan'],
+      ['Art', 'Sketch a Character', 'Draw a detailed character design.', 'pink'],
+      ['Music', 'Learn Chords', 'Practice guitar or piano chords.', 'purple']
+    ];
+
+    const challenges = [];
+
+    for (let i = 1; i <= 100; i++) {
+      const template = templates[i % templates.length];
+
+      challenges.push({
+        id: i,
+        category: template[0],
+        title: template[1] + ' #' + i,
+        description: template[2],
+        color: template[3],
+        xp: 50 + (i % 5) * 20,
+        progress: Math.floor(Math.random() * 100),
+        completed: false,
+      });
+    }
+
+    function renderChallenges() {
+      const grid = document.getElementById('challengeGrid');
+      grid.innerHTML = '';
+
+      challenges.forEach((challenge) => {
+        const colorMap = {
+          cyan: {
+            badge: 'bg-cyan-100 text-cyan-700',
+            button: 'bg-cyan-500 hover:bg-cyan-400',
+            bar: 'bg-cyan-500'
+          },
+          purple: {
+            badge: 'bg-purple-100 text-purple-700',
+            button: 'bg-purple-500 hover:bg-purple-400',
+            bar: 'bg-purple-500'
+          },
+          pink: {
+            badge: 'bg-pink-100 text-pink-700',
+            button: 'bg-pink-500 hover:bg-pink-400',
+            bar: 'bg-pink-500'
+          }
+        };
+
+        const colors = colorMap[challenge.color];
+
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-3xl p-6 shadow-lg border border-slate-200';
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-5">
+            <span class="${colors.badge} px-4 py-1 rounded-full text-sm font-medium">
+              ${challenge.category}
+            </span>
+
+            <span class="text-yellow-500 font-bold">
+              +${challenge.xp} XP
+            </span>
+          </div>
+
+          <h3 class="text-3xl font-bold">${challenge.title}</h3>
+
+          <p class="text-slate-500 mt-3">
+            ${challenge.description}
+          </p>
+
+          <div class="mt-6 bg-slate-200 rounded-full h-3 overflow-hidden">
+            <div
+              class="${colors.bar} h-3 rounded-full"
+              style="width:${challenge.progress}%"
+            ></div>
+          </div>
+
+          <div class="flex items-center justify-between mt-4">
+            <span class="text-sm text-slate-500">
+              ${challenge.progress}% Complete
+            </span>
+
+            <button
+              class="${colors.button} text-white px-5 py-2 rounded-xl font-semibold"
+              onclick="completeChallenge(${challenge.id})"
+              ${challenge.completed ? 'disabled' : ''}
+            >
+              ${challenge.completed ? 'Completed' : 'Finish'}
+            </button>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function completeChallenge(id) {
+      const challenge = challenges.find(c => c.id === id);
+
+      if (!challenge || challenge.completed) return;
+
+      challenge.completed = true;
+      challenge.progress = 100;
+
+      xp += challenge.xp;
+      completed++;
+
+      if (xp >= level * 100) {
+        level++;
+      }
+
+      updateStats();
+      renderChallenges();
+    }
+
+    function updateStats() {
+      document.getElementById('xp').innerText = xp;
+      document.getElementById('level').innerText = level;
+      document.getElementById('completed').innerText = completed;
+    }
+
+    function addChallenge() {
+      const input = document.getElementById('challengeInput');
+
+      if (!input.value.trim()) return;
+
+      challenges.unshift({
+        id: Date.now(),
+        category: 'Custom',
+        title: input.value,
+        description: 'User-created sprint challenge.',
+        color: 'cyan',
+        xp: 60,
+        progress: 0,
+        completed: false,
+      });
+
+      input.value = '';
+      renderChallenges();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        if (timerSeconds > 0) {
+          timerSeconds--;
+          updateTimer();
+        } else {
+          clearInterval(timerInterval);
+          xp += 50;
+          updateStats();
+          alert('Focus session completed! +50 XP');
+        }
+      }, 1000);
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerSeconds = 1500;
+      updateTimer();
+    }
+
+    function updateTimer() {
+      const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+      const secs = String(timerSeconds % 60).padStart(2, '0');
+
+      document.getElementById('timer').innerText = `${mins}:${secs}`;
+    }
+
+    renderChallenges();
+    updateStats();
+    updateTimer();
+  </script>
+</body>
+</html>
