@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkillSprint</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-slate-100 via-white to-slate-200 text-slate-900 font-sans">
+
+<!-- glow blobs -->
+<div class="fixed top-0 left-0 w-96 h-96 bg-cyan-300 blur-3xl opacity-30 rounded-full"></div>
+<div class="fixed bottom-0 right-0 w-96 h-96 bg-blue-300 blur-3xl opacity-30 rounded-full"></div>
+
+<div class="relative max-w-6xl mx-auto p-6">
+
+  <!-- HEADER -->
+  <div class="mb-10">
+    <h1 class="text-5xl font-black tracking-tight bg-gradient-to-r from-cyan-500 to-blue-600 text-transparent bg-clip-text">
+      SkillSprint
+    </h1>
+    <p class="text-slate-500 mt-2 text-lg">
+      Level up real-world skills, one sprint at a time
+    </p>
+  </div>
+
+  <!-- WARNING -->
+  <div class="backdrop-blur-xl bg-white/60 border border-white/40 p-4 rounded-2xl mb-8 shadow-lg">
+    ⚠ Progress is saved locally. Clearing browser data will delete everything.
+  </div>
+
+  <!-- STATS -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
+
+    <div class="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-xl hover:scale-105 transition">
+      <p class="text-slate-500 text-sm">Level</p>
+      <h2 id="level" class="text-4xl font-black mt-2">0</h2>
+    </div>
+
+    <div class="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-xl hover:scale-105 transition">
+      <p class="text-slate-500 text-sm">XP</p>
+      <h2 id="xp" class="text-4xl font-black mt-2">0</h2>
+    </div>
+
+    <div class="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-xl hover:scale-105 transition">
+      <p class="text-slate-500 text-sm">Streak</p>
+      <h2 id="streak" class="text-4xl font-black mt-2">0</h2>
+    </div>
+
+    <div class="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-xl hover:scale-105 transition">
+      <p class="text-slate-500 text-sm">Completed</p>
+      <h2 id="completed" class="text-4xl font-black mt-2">0</h2>
+    </div>
+
+  </div>
+
+  <!-- ADD TASK -->
+  <div class="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-xl mb-10">
+    <h2 class="text-2xl font-bold mb-4">Add Custom Sprint</h2>
+
+    <div class="grid md:grid-cols-3 gap-4">
+      <input id="title" class="p-3 rounded-2xl border border-slate-200 bg-white/80" placeholder="Task title">
+      <input id="desc" class="p-3 rounded-2xl border border-slate-200 bg-white/80" placeholder="Description">
+      <input id="video" class="p-3 rounded-2xl border border-slate-200 bg-white/80" placeholder="YouTube link">
+    </div>
+
+    <button onclick="addTask()" 
+      class="mt-5 px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold shadow-lg hover:scale-105 transition">
+      Add Task
+    </button>
+  </div>
+
+  <!-- TASK LIST -->
+  <div id="tasks" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+
+</div>
+
+<script>
+
+function save(){
+  localStorage.setItem("skillsprint", JSON.stringify(data));
+}
+
+let data = JSON.parse(localStorage.getItem("skillsprint"));
+
+if(!data){
+  data = { xp:0, level:0, streak:0, completed:0, tasks:[], done:[] };
+}
+
+if(!Array.isArray(data.tasks)) data.tasks = [];
+if(!Array.isArray(data.done)) data.done = [];
+
+/* REAL PHYSICAL TASKS */
+const base = [
+  ["Pushups","20–40 controlled pushups"],
+  ["Squats","30 bodyweight squats"],
+  ["Plank","Hold plank 60–120 seconds"],
+  ["Jump Rope","5–10 minutes continuous"],
+  ["Sprint","10 short sprints (20–30m)"],
+  ["Burpees","15–25 burpees"],
+  ["Wall Sit","Hold 60–90 seconds"],
+  ["Stretching","10 min full body stretch"],
+  ["Dribbling","10 min basketball control"],
+  ["Lunges","20 per leg walking lunges"]
+];
+
+/* 100 TASKS */
+data.tasks = [];
+
+for(let i = 1; i <= 100; i++){
+  const b = base[i % base.length];
+  data.tasks.push({
+    t: `${b[0]} Sprint #${i}`,
+    d: b[1],
+    v: "https://www.youtube.com/watch?v=ml6cT4AZdqI"
+  });
+}
+
+save();
+
+function addTask(){
+  const t = document.getElementById("title").value.trim();
+  const d = document.getElementById("desc").value.trim();
+  const v = document.getElementById("video").value.trim();
+
+  if(!t || !d || !v) return alert("Fill all fields");
+
+  data.tasks.unshift({t,d,v});
+  save();
+  render();
+}
+
+function finish(i){
+  if(data.done.includes(i)) return;
+
+  data.done.push(i);
+  data.completed++;
+  data.xp += 50;
+
+  if(data.xp >= (data.level+1)*100){
+    data.level++;
+  }
+
+  save();
+  render();
+}
+
+function openVideo(url){
+  window.open(url,"_blank");
+}
+
+function render(){
+
+  document.getElementById("level").innerText = data.level;
+  document.getElementById("xp").innerText = data.xp;
+  document.getElementById("streak").innerText = data.streak;
+  document.getElementById("completed").innerText = data.completed;
+
+  const box = document.getElementById("tasks");
+  box.innerHTML = "";
+
+  data.tasks.forEach((x,i)=>{
+
+    const done = data.done.includes(i);
+
+    box.innerHTML += `
+      <div class="bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl p-6 shadow-xl hover:scale-[1.02] transition">
+
+        <h3 class="text-xl font-bold">${x.t}</h3>
+        <p class="text-slate-500 mt-1">${x.d}</p>
+
+        <div class="flex gap-3 mt-5">
+
+          <button 
+            onclick="finish(${i})"
+            ${done ? "disabled" : ""}
+            class="${done 
+              ? "bg-green-500/80 text-white px-4 py-2 rounded-xl cursor-not-allowed opacity-70"
+              : "bg-slate-900 text-white px-4 py-2 rounded-xl hover:scale-105 transition"}"
+          >
+            ${done ? "Done ✓" : "Finish"}
+          </button>
+
+          <button onclick="openVideo('${x.v}')" 
+            class="bg-white border px-4 py-2 rounded-xl hover:bg-slate-100 transition">
+            How To
+          </button>
+
+        </div>
+      </div>
+    `;
+  });
+
+  save();
+}
+
+render();
+
+</script>
+
+</body>
+</html>
